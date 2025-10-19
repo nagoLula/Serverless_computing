@@ -1,9 +1,8 @@
 import logging
 import json
+import azure.functions as func # pyright: ignore[reportMissingImports]
 
-import azure.functions as functions # pyright: ignore[reportMissingImports]
-
-def main(req: functions.HttpRequest) -> functions.HttpResponse:
+def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Processing potassium classification request.")
 
     try:
@@ -11,14 +10,14 @@ def main(req: functions.HttpRequest) -> functions.HttpResponse:
         potassium = req_body.get("potassium")
 
         if potassium is None:
-            return functions.HttpResponse(
+            return func.HttpResponse(
                 json.dumps({"error": "'potassium' is required."}),
                 status_code=400,
                 mimetype="application/json"
             )
 
         if not isinstance(potassium, (int, float)):
-            return functions.HttpResponse(
+            return func.HttpResponse(
                 json.dumps({"error": "'potassium' must be a number."}),
                 status_code=400,
                 mimetype="application/json"
@@ -31,7 +30,7 @@ def main(req: functions.HttpRequest) -> functions.HttpResponse:
             status = "abnormal"
             category = "Abnormal (<3.5 or >5.0 mmol/L)"
 
-        return functions.HttpResponse(
+        return func.HttpResponse(
             json.dumps({
                 "potassium": potassium,
                 "status": status,
@@ -42,10 +41,9 @@ def main(req: functions.HttpRequest) -> functions.HttpResponse:
         )
 
     except Exception as e:
-        return functions.HttpResponse(
+        logging.exception("Error processing request.")
+        return func.HttpResponse(
             json.dumps({"error": str(e)}),
             status_code=500,
             mimetype="application/json"
         )
-
-
